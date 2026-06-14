@@ -1,16 +1,26 @@
 from pathlib import Path
 
-import pytest
+from tree_sitter import Language, Parser, Query
 
 import tree_sitter_clojure
 
 
-def test_queries_dir_contains_highlights_query() -> None:
-    queries_dir = tree_sitter_clojure.queries_dir()
-    assert queries_dir.is_dir()
-    assert (queries_dir / "highlights.scm").is_file()
+def test_language_can_build_a_parser() -> None:
+    language = Language(tree_sitter_clojure.language())
+    parser = Parser(language)
+    tree = parser.parse(b"(ns demo)\n(defn add [x y] (+ x y))\n")
+
+    assert tree.root_node.type == "source"
+    assert tree.root_node.named_child_count >= 2
 
 
-def test_language_placeholder_is_explicit() -> None:
-    with pytest.raises(NotImplementedError):
-        tree_sitter_clojure.language()
+def test_bundled_queries_compile() -> None:
+    query_dir = tree_sitter_clojure.queries_dir()
+    highlights = query_dir / "highlights.scm"
+    language = Language(tree_sitter_clojure.language())
+
+    query = Query(language, highlights.read_text())
+
+    assert isinstance(query_dir, Path)
+    assert highlights.exists()
+    assert query.pattern_count > 0

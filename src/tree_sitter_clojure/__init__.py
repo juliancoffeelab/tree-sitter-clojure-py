@@ -1,11 +1,13 @@
 from importlib.resources import files
 from pathlib import Path
 
+from ._binding import language as _language
+
+__all__ = ["language", "queries_dir"]
+
 
 def language() -> object:
-    raise NotImplementedError(
-        "Native tree-sitter binding is not wired yet; package scaffold is ready."
-    )
+    return _language()
 
 
 def queries_dir() -> Path:
